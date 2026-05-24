@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
@@ -499,6 +499,20 @@ body { font-family: 'Hind Siliguri', sans-serif; background: #ede9fe; color: var
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbz_FS-C3Au6SWtaxtZE72bBPNh6nM4qiaax2ZhVzNJ-0E5Eolw9mMPi215y_s8u0DTyTA/exec';
+const PROXY = 'https://corsproxy.io/?';
+
+async function fetchWithProxy(url) {
+  // Try direct first, then proxy
+  try {
+    const res = await fetch(url, {mode: 'cors'});
+    if (res.ok) return await res.json();
+  } catch(e) {}
+  try {
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    if (res.ok) return await res.json();
+  } catch(e) {}
+  return null;
+}
 
 const MEMBER_COLORS = [
   'linear-gradient(135deg,#6c3dd5,#a78bfa)',
@@ -523,20 +537,18 @@ let summaryData = null;
 
 async function loadSummary() {
   try {
-    const res = await fetch(API_URL + '?sheet=1');
-    const json = await res.json();
-    summaryData = json.data;
-    return json.data;
+    const json = await fetchWithProxy(API_URL + '?sheet=1');
+    if (json) { summaryData = json.data; return json.data; }
+    return null;
   } catch(e) { return null; }
 }
 
 async function loadMemberData(sheetName) {
   if (cachedData[sheetName]) return cachedData[sheetName];
   try {
-    const res = await fetch(API_URL + '?sheet=' + sheetName);
-    const json = await res.json();
-    cachedData[sheetName] = json.data;
-    return json.data;
+    const json = await fetchWithProxy(API_URL + '?sheet=' + sheetName);
+    if (json) { cachedData[sheetName] = json.data; return json.data; }
+    return null;
   } catch(e) { return null; }
 }
 
@@ -833,4 +845,4 @@ async function installApp() {
   if (outcome === 'accepted') showToast('✅ অ্যাপ ইন্সটল হচ্ছে...');
 }
 </body>
-</html>
+  </html>
